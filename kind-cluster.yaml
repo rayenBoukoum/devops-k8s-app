@@ -1,0 +1,18 @@
+# Local cluster: 1 control plane + 1 worker.
+# Ports 80/443 of the PC are mapped to the worker only, so the Ingress controller
+# must run there. After installing ingress-nginx, pin it to this node:
+#   kubectl patch deployment ingress-nginx-controller -n ingress-nginx \
+#     -p '{"spec":{"template":{"spec":{"nodeSelector":{"ingress-ready":"true"}}}}}'
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: fullstack
+nodes:
+  - role: control-plane
+  - role: worker
+    labels:
+      ingress-ready: "true"     # target of the Ingress controller nodeSelector
+    extraPortMappings:          # localhost:80 of the PC -> port 80 of the worker node
+      - containerPort: 80
+        hostPort: 80
+      - containerPort: 443
+        hostPort: 443

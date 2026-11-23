@@ -1,0 +1,4 @@
+apiVersion: v1          # API version of this kind of object
+kind: Namespace         # type of object
+metadata:
+  name: fullstack       # its name
