@@ -1,0 +1,21 @@
+# Run: kind get kubeconfig --internal --name fullstack > jenkins/kubeconfig
+#      docker compose -f jenkins/docker-compose.yml up -d --build      -> http://localhost:8080
+services:
+  jenkins:
+    build: .
+    image: devops-jenkins
+    ports: ["8080:8080"]
+    environment:
+      JENKINS_ADMIN_PASSWORD: ${JENKINS_ADMIN_PASSWORD}       # read from jenkins/.env
+    volumes:
+      - jenkins-home:/var/jenkins_home                          # jobs and build history survive restarts
+      - ${HOME}/.local/bin/kubectl:/usr/local/bin/kubectl:ro    # ponytail: reuse the host kubectl binary
+      - ./kubeconfig:/run/secrets/kubeconfig:ro                 # cluster access, git-ignored
+    networks: [kind]
+
+volumes:
+  jenkins-home:
+
+networks:
+  kind:
+    external: true    # Docker network created by kind: reach fullstack-control-plane:6443 and the Ingress

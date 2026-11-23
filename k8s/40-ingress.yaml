@@ -1,0 +1,41 @@
+# Entry point of the application: http://localhost/
+# /      -> frontend Service (Angular served by Nginx)
+# /api/* -> backend Service directly, "/api" prefix removed (/api/user/all -> /user/all)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend
+  namespace: fullstack
+spec:
+  ingressClassName: nginx       # handled by the ingress-nginx controller
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api
+  namespace: fullstack
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2   # keep only the part after /api/
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /api(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 8081
