@@ -1,0 +1,28 @@
+# PV = the actual disk space offered to the cluster
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce                    # mounted read-write by one node at a time
+  persistentVolumeReclaimPolicy: Retain   # keep the data even if the PVC is deleted
+  storageClassName: manual             # stops kind's default provisioner from creating its own volume
+  hostPath:
+    path: /data/mysql                  # ponytail: folder on the worker node; multi-node clusters need NFS or a cloud disk
+---
+# PVC = the application's request for storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+  namespace: fullstack
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

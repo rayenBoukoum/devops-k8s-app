@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  namespace: fullstack
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate          # stop the old pod before starting the new one: never 2 MySQL on the same files
+  selector:
+    matchLabels:
+      app: mysql            # this Deployment manages pods labelled app=mysql
+  template:                 # the pod "mould"
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_DATABASE
+              value: demo
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: DB_USER
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: DB_PASSWORD
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: DB_ROOT_PASSWORD
+          readinessProbe:   # pod "Ready" only when MySQL answers over TCP
+            exec:
+              command: ["mysqladmin", "ping", "-h", "127.0.0.1"]
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/mysql   # MySQL data folder -> on the PVC
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: mysql-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql               # DNS name: the backend will use jdbc:mysql://mysql:3306/demo
+  namespace: fullstack
+spec:
+  selector:
+    app: mysql              # traffic goes to pods labelled app=mysql
+  ports:
+    - port: 3306
