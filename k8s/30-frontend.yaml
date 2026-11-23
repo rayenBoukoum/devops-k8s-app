@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: rayenbkm/devops-frontend:sha-0e09bea
+          image: rayenbkm/devops-frontend:sha-7e84027
           ports:
             - containerPort: 80
           resources:

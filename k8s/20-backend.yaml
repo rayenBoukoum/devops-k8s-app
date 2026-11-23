@@ -4,7 +4,7 @@ metadata:
   name: backend
   namespace: fullstack
 spec:
-  replicas: 2
+  # no "replicas": the HPA (50-backend-hpa.yaml) owns the replica count (2 to 5)
   selector:
     matchLabels:
       app: backend
@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: rayenbkm/devops-backend:sha-0e09bea   # pinned CI tag (never :latest, see report)
+          image: rayenbkm/devops-backend:sha-7e84027   # pinned CI tag (never :latest, see report)
           ports:
             - containerPort: 8081
           env:

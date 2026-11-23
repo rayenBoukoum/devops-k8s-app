@@ -1,0 +1,24 @@
+# HPA: adds/removes backend pods to keep their average CPU around 50% of the request (100m).
+# Needs metrics-server. The HPA owns the replica count, so 20-backend.yaml sets no "replicas".
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend
+  namespace: fullstack
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50      # % of requests.cpu (100m) -> target 50m per pod
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 60  # default 300s, shortened for the demo

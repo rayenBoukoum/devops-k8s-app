@@ -1,0 +1,29 @@
+# VPA in recommendation mode ("Off"): the vpa-recommender watches real CPU/memory usage
+# and computes the requests each container should have; nothing is changed automatically.
+# - backend: must stay "Off" because the HPA already scales it on CPU (both would fight).
+# - frontend: could be "Recreate" once the VPA updater + admission controller are installed.
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: backend
+  namespace: fullstack
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend
+  updatePolicy:
+    updateMode: "Off"
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: frontend
+  namespace: fullstack
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend
+  updatePolicy:
+    updateMode: "Off"
